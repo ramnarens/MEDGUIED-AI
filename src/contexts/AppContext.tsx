@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { mockPatient, mockMedicines, mockSchedule, mockCaregiverStats } from '../data/mockData';
 import { translations } from '../translations';
-import { supabase } from '../lib/supabase';
 
 interface AppContextType {
   theme: 'light' | 'dark';
@@ -17,8 +16,6 @@ interface AppContextType {
   language: 'en' | 'hi' | 'te';
   setLanguage: (lang: 'en' | 'hi' | 'te') => void;
   t: (key: string) => string;
-  session: any;
-  signOut: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -28,21 +25,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [schedule, setSchedule] = useState(mockSchedule);
   const [scannedImage, setScannedImage] = useState<string | null>(null);
   const [language, setLanguage] = useState<'en' | 'hi' | 'te'>('en');
-  const [session, setSession] = useState<any>(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   const t = (key: string) => {
     // @ts-ignore
@@ -105,9 +87,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       updateSchedule,
       language,
       setLanguage,
-      t,
-      session,
-      signOut: async () => { await supabase.auth.signOut(); }
+      t
     }}>
       {children}
     </AppContext.Provider>
