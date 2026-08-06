@@ -8,6 +8,7 @@ interface AppContextType {
   patient: typeof mockPatient;
   medicines: typeof mockMedicines;
   schedule: typeof mockSchedule;
+  caregiverStats: typeof mockCaregiverStats;
   markAsTaken: (timeOfDay: string, medicineId: string) => void;
   scannedImage: string | null;
   setScannedImage: (img: string | null) => void;

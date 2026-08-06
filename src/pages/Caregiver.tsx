@@ -23,7 +23,7 @@ const Caregiver = () => {
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
             <button style={{ padding: '0.75rem', borderRadius: '50%', border: 'none', background: 'var(--color-primary)', color: 'white', cursor: 'pointer' }}><Phone size={20} /></button>
             <button style={{ padding: '0.75rem', borderRadius: '50%', border: 'none', background: 'var(--color-secondary)', color: 'white', cursor: 'pointer' }}><Video size={20} /></button>
-            <button style={{ padding: '0.75rem', borderRadius: '50%', border: 'none', background: 'var(--color-surface)', color: 'var(--color-text)', border: '1px solid var(--color-border)', cursor: 'pointer' }}><MapPin size={20} /></button>
+            <button style={{ padding: '0.75rem', borderRadius: '50%', background: 'var(--color-surface)', color: 'var(--color-text)', border: '1px solid var(--color-border)', cursor: 'pointer' }}><MapPin size={20} /></button>
           </div>
         </div>
 
