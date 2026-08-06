@@ -18,7 +18,11 @@ const VoiceAssistant = () => {
   const [isThinking, setIsThinking] = useState(false);
   const [transcript, setTranscript] = useState("Tap the microphone and ask a question...");
   
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const isEnvKeyValid = envKey && envKey !== 'paste_your_google_gemini_api_key_here';
+  
+  const [apiKey, setApiKey] = useState(isEnvKeyValid ? envKey : (localStorage.getItem('gemini_api_key') || ''));
+  const [showApiKeyInput, setShowApiKeyInput] = useState(!isEnvKeyValid && !localStorage.getItem('gemini_api_key'));
   
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
@@ -66,8 +70,18 @@ const VoiceAssistant = () => {
     };
   }, [language]);
 
+  const saveApiKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (apiKey.trim()) {
+      localStorage.setItem('gemini_api_key', apiKey.trim());
+      setShowApiKeyInput(false);
+    }
+  };
+
   const handleGeminiResponse = async (userText: string) => {
     if (!apiKey || apiKey === 'paste_your_google_gemini_api_key_here') {
+      setTranscript("Please enter your Gemini API Key first.");
+      setShowApiKeyInput(true);
       return;
     }
 
@@ -120,9 +134,17 @@ const VoiceAssistant = () => {
   };
 
   const toggleListen = () => {
+    if (showApiKeyInput) return;
+    
     if (!apiKey || apiKey === 'paste_your_google_gemini_api_key_here') {
-      setTranscript("Please add your API key to the .env file.");
+      setTranscript("Please enter your Gemini API key.");
+      setShowApiKeyInput(true);
       return;
+    }
+
+    // Unlock audio engine on first user interaction
+    if (synthRef.current) {
+      synthRef.current.speak(new SpeechSynthesisUtterance(''));
     }
     
     if (isListening) {
@@ -145,14 +167,32 @@ const VoiceAssistant = () => {
       <h2>{t('nav_voice') || 'Voice Assistant'} (Gemini AI)</h2>
       <p className="text-muted" style={{ marginBottom: '3rem' }}>Ask anything about your medicines in your language.</p>
       
-      {(!apiKey || apiKey === 'paste_your_google_gemini_api_key_here') && (
-        <div style={{ padding: '1rem', background: 'var(--color-danger)', color: 'white', borderRadius: 'var(--radius-md)', marginBottom: '2rem' }}>
-          Please add your Gemini API Key to the <code>.env</code> file in your project folder to enable the AI Voice Assistant.
+      {showApiKeyInput ? (
+        <div className="glass animate-slide-up" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', marginBottom: '3rem' }}>
+          <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+            <Key size={20} /> Enter Gemini API Key
+          </h3>
+          <p className="text-muted" style={{ marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+            Since the Vercel environment variable isn't set, please paste your Gemini API Key here to test it. It will be saved securely in your browser.
+          </p>
+          <form onSubmit={saveApiKey} style={{ display: 'flex', gap: '1rem' }}>
+            <input 
+              type="password" 
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="AIzaSy..." 
+              style={{ flex: 1, padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }}
+              required
+            />
+            <button type="submit" style={{ padding: '0.75rem 1.5rem', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--color-primary)', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
+              Save
+            </button>
+          </form>
         </div>
-      )}
-
-      <div 
-        className="glass" 
+      ) : (
+        <>
+          <div 
+            className="glass"  
             style={{ 
               width: '200px', 
               height: '200px', 
