@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, Volume2, Square, Key, Loader } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // TypeScript declaration for Web Speech API
 declare global {
@@ -79,41 +78,15 @@ const VoiceAssistant = () => {
   };
 
   const handleGeminiResponse = async (userText: string) => {
-    if (!apiKey || apiKey === 'paste_your_google_gemini_api_key_here') {
-      setTranscript("Please enter your Gemini API Key first.");
-      setShowApiKeyInput(true);
-      return;
-    }
-
     setIsThinking(true);
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-      
-      const prompt = `
-        You are a friendly, concise, and helpful medical voice assistant named MedGuide AI. 
-        A patient is speaking to you. Answer their question briefly (1-3 sentences maximum) so it can be spoken out loud.
-        Do not use formatting like asterisks or bullet points, just plain text.
-        If they ask about something unrelated to health, medicine, or their schedule, politely bring the topic back to their health.
-        Please respond in this language code: ${language}.
-        
-        Patient says: "${userText}"
-      `;
-
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const reply = response.text();
-      
+    
+    // Simulate AI delay
+    setTimeout(() => {
+      setIsThinking(false);
+      const reply = "I am a local mock assistant. You said: " + userText;
       setTranscript(reply);
       speak(reply);
-    } catch (error) {
-      console.error("Gemini API Error:", error);
-      const errorMsg = "Sorry, I am having trouble connecting to my AI brain. Please check your API key.";
-      setTranscript(errorMsg);
-      speak(errorMsg);
-    } finally {
-      setIsThinking(false);
-    }
+    }, 1500);
   };
 
   const speak = (text: string) => {
@@ -134,12 +107,8 @@ const VoiceAssistant = () => {
   };
 
   const toggleListen = () => {
-    if (showApiKeyInput) return;
-    
-    if (!apiKey || apiKey === 'paste_your_google_gemini_api_key_here') {
-      setTranscript("Please enter your Gemini API key.");
-      setShowApiKeyInput(true);
-      return;
+    if (showApiKeyInput) {
+      setShowApiKeyInput(false); // Skip API key for mock
     }
 
     // Unlock audio engine on first user interaction
