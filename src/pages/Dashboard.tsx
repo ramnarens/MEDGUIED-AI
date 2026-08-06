@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { Pill, Bell, AlertCircle, TrendingUp, Calendar as CalendarIcon, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import AdherenceModal from '../components/AdherenceModal';
 
 const Dashboard = () => {
   const { patient, schedule, caregiverStats, t } = useAppContext();
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div className="container" style={{ padding: '2rem 1.5rem', maxWidth: '1200px' }}>
@@ -17,7 +19,7 @@ const Dashboard = () => {
         <img src={patient.avatar} alt="Profile" style={{ width: '48px', height: '48px', borderRadius: '50%', border: '2px solid var(--color-primary)' }} />
       </div>
 
-      <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', marginBottom: '2rem' }}>
+      <div className="summary-grid">
         {/* Quick Stats */}
         <div className="glass" style={{ padding: '1.5rem', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ padding: '1rem', background: 'var(--color-primary-light)', borderRadius: 'var(--radius-md)', color: 'var(--color-primary-dark)' }}>
@@ -29,7 +31,11 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="glass" style={{ padding: '1.5rem', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div 
+          className="glass hover-scale" 
+          onClick={() => setIsModalOpen(true)}
+          style={{ padding: '1.5rem', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', transition: 'transform 0.2s ease' }}
+        >
           <div style={{ padding: '1rem', background: 'var(--color-accent)', opacity: 0.8, borderRadius: 'var(--radius-md)', color: 'white' }}>
             <TrendingUp size={24} />
           </div>
@@ -109,6 +115,8 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      <AdherenceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };
