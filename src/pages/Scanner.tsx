@@ -4,18 +4,41 @@ import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../contexts/AppContext';
 
 const Scanner = () => {
-  const { setScannedImage } = useAppContext();
+  const { setScannedImage, addAnalyzedMedicines } = useAppContext();
   const [isScanning, setIsScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  const handleSimulatedUpload = () => {
+  const handleUpload = async (base64Img: string, retryCount = 0) => {
     setIsScanning(true);
-    setTimeout(() => {
+    setScanError(null);
+    try {
+      const res = await fetch('/api/analyze-prescription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64Img })
+      });
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || 'Failed to analyze');
+      if (!data.medicines || data.medicines.length === 0) {
+        throw new Error('No medicines detected.');
+      }
+      
+      addAnalyzedMedicines(data.medicines);
       navigate('/simplification');
-    }, 2000);
+    } catch (err: any) {
+      if (retryCount < 1) {
+        console.log("Retrying API call...");
+        handleUpload(base64Img, 1);
+      } else {
+        setIsScanning(false);
+        setScanError(err.message === 'No medicines detected.' ? err.message : 'Image quality is low. Please upload a clearer prescription.');
+      }
+    }
   };
 
   const startCamera = async () => {
@@ -53,7 +76,7 @@ const Scanner = () => {
       }
     }
     stopCamera();
-    handleSimulatedUpload();
+    handleUpload(dataUrl);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,9 +85,10 @@ const Scanner = () => {
       const reader = new FileReader();
       reader.onload = (ev) => {
         if (ev.target?.result) {
-          setScannedImage(ev.target.result as string);
+          const imgUrl = ev.target.result as string;
+          setScannedImage(imgUrl);
+          handleUpload(imgUrl);
         }
-        handleSimulatedUpload();
       };
       reader.readAsDataURL(file);
     }
@@ -118,6 +142,11 @@ const Scanner = () => {
             </div>
           ) : (
             <div className="animate-fade-in">
+              {scanError && (
+                <div style={{ padding: '1rem', background: 'var(--color-danger)', color: 'white', borderRadius: 'var(--radius-md)', marginBottom: '2rem' }}>
+                  {scanError}
+                </div>
+              )}
               <div onClick={() => fileInputRef.current?.click()} style={{ cursor: 'pointer', marginBottom: '2rem' }}>
                 <Upload size={48} style={{ color: 'var(--color-primary)', marginBottom: '1rem' }} />
                 <h3>Drag & Drop</h3>

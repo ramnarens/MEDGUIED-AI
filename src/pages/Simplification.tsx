@@ -5,44 +5,71 @@ import { useAppContext } from '../contexts/AppContext';
 
 const Simplification = () => {
   const navigate = useNavigate();
-  const { medicines, scannedImage } = useAppContext();
-  const med = medicines[0];
+  const { dynamicMedicines, medicines, scannedImage } = useAppContext();
+  
+  // Use dynamic medicines if available, fallback to mock for safety if bypassing scanner
+  const displayMeds = dynamicMedicines.length > 0 ? dynamicMedicines : medicines;
 
   return (
     <div className="container" style={{ padding: '2rem 1.5rem', maxWidth: '900px' }}>
       <h2 style={{ marginBottom: '2rem' }}>AI Simplification</h2>
       
       <div className="responsive-grid-3-auto" style={{ gap: '2rem', alignItems: 'center' }}>
-        <div className="glass" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', textAlign: 'center' }}>
+        <div className="glass" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', textAlign: 'center', height: 'fit-content' }}>
           <h4 className="text-muted" style={{ marginBottom: '1rem' }}>Original Prescription</h4>
           {scannedImage ? (
-             <img src={scannedImage} alt="Scanned prescription" style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: 'var(--radius-md)' }} />
+             <img src={scannedImage} alt="Scanned prescription" style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain', borderRadius: 'var(--radius-md)' }} />
           ) : (
             <div style={{ fontFamily: 'monospace', fontSize: '1.2rem', padding: '1rem', background: 'var(--color-background)', borderRadius: 'var(--radius-md)' }}>
-              Tab {med.genericName} {med.dosage} BD PC
+              No image scanned.
             </div>
           )}
         </div>
         
-        <ArrowRight size={32} style={{ color: 'var(--color-primary)' }} />
-        
-        <div className="glass animate-slide-up" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', border: '2px solid var(--color-primary)' }}>
-          <h4 style={{ color: 'var(--color-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <CheckCircle2 size={24} /> Simplified Instructions
-          </h4>
-          <h3 style={{ marginBottom: '0.5rem' }}>{med.genericName} ({med.brandName})</h3>
-          <p className="text-lg" style={{ fontWeight: 600 }}>{med.instructions}</p>
+        <div style={{ display: 'none' }}>
+          <ArrowRight size={32} style={{ color: 'var(--color-primary)' }} />
         </div>
-      </div>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {displayMeds.map((med: any, idx: number) => (
+            <div key={med.id || idx} className="glass animate-slide-up" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', border: '2px solid var(--color-primary)', animationDelay: `${idx * 0.1}s` }}>
+              <h4 style={{ color: 'var(--color-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <CheckCircle2 size={24} /> Simplified Instructions
+              </h4>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+                <div>
+                  <div className="text-sm text-muted">Medicine</div>
+                  <h3 style={{ marginBottom: '0' }}>{med.medicine || med.genericName} {med.brand ? `(${med.brand})` : ''}</h3>
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <div className="text-sm text-muted">Dosage</div>
+                    <div style={{ fontWeight: 600 }}>{med.dosage}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted">Timing</div>
+                    <div style={{ fontWeight: 600 }}>{med.timing}</div>
+                  </div>
+                </div>
+                
+                <div style={{ marginTop: '0.5rem', padding: '1rem', background: 'var(--color-background)', borderRadius: 'var(--radius-md)' }}>
+                  <div className="text-sm text-muted" style={{ marginBottom: '0.25rem' }}>Instruction</div>
+                  <p className="text-lg" style={{ fontWeight: 600 }}>{med.instruction || med.instructions}</p>
+                </div>
 
-      <div style={{ marginTop: '3rem', display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-        <div className="glass" style={{ padding: '1.5rem', borderRadius: 'var(--radius-lg)', borderLeft: '4px solid var(--color-warning)' }}>
-          <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <AlertTriangle size={20} color="var(--color-warning)" /> Important Warnings
-          </h4>
-          <ul style={{ paddingLeft: '1.5rem', color: 'var(--color-text)' }}>
-            {med.warnings.map((w, i) => <li key={i} style={{ marginBottom: '0.5rem' }}>{w}</li>)}
-          </ul>
+                {(med.notes || med.warnings) && (
+                  <div style={{ marginTop: '1rem', padding: '1rem', borderLeft: '4px solid var(--color-warning)', background: 'var(--color-surface)', borderRadius: 'var(--radius-md)' }}>
+                    <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '1rem' }}>
+                      <AlertTriangle size={18} color="var(--color-warning)" /> Note / Warning
+                    </h4>
+                    <p style={{ fontSize: '0.9rem' }}>{med.notes || (med.warnings ? med.warnings.join(', ') : '')}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

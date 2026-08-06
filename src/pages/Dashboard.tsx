@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import AdherenceModal from '../components/AdherenceModal';
 
 const Dashboard = () => {
-  const { patient, schedule, caregiverStats, t } = useAppContext();
+  const { patient, schedule, caregiverStats, t, refills } = useAppContext();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -90,18 +90,43 @@ const Dashboard = () => {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div className="glass" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)' }}>
-            <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <CalendarIcon size={20} /> {t('dash_upcoming')}
-            </h3>
-            <ul style={{ listStyle: 'none', display: 'grid', gap: '1rem' }}>
-              <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>
-                <div>
-                  <p style={{ fontWeight: 500 }}>Lisinopril (10mg)</p>
-                  <p className="text-muted text-sm">3 pills left</p>
-                </div>
-                <span style={{ padding: '0.25rem 0.5rem', background: 'var(--color-warning)', color: 'white', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem' }}>Soon</span>
-              </li>
-            </ul>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <CalendarIcon size={20} /> Upcoming Refills
+              </h3>
+              <span className="text-sm font-semibold text-muted">{refills.length} Medicines</span>
+            </div>
+            
+            {refills.length === 0 ? (
+              <p className="text-muted text-center" style={{ padding: '1rem 0' }}>No medicines found. Scan a prescription to add.</p>
+            ) : (
+              <ul style={{ listStyle: 'none', display: 'grid', gap: '1rem' }}>
+                {refills.map(refill => {
+                  let statusColor = 'var(--color-danger)';
+                  let statusText = 'Critical';
+                  if (refill.remainingPills > 10) {
+                    statusColor = 'var(--color-accent)';
+                    statusText = 'Good';
+                  } else if (refill.remainingPills >= 5) {
+                    statusColor = '#EAB308'; // Yellow
+                    statusText = 'Order Soon';
+                  } else if (refill.remainingPills >= 2) {
+                    statusColor = 'var(--color-warning)'; // Orange/Warning
+                    statusText = 'Low Stock';
+                  }
+
+                  return (
+                    <li key={refill.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>
+                      <div>
+                        <p style={{ fontWeight: 500 }}>{refill.medicineName} ({refill.dosage})</p>
+                        <p className="text-muted text-sm">{refill.remainingPills} pills left</p>
+                      </div>
+                      <span style={{ padding: '0.25rem 0.5rem', background: statusColor, color: 'white', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', fontWeight: 600 }}>{statusText}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
           
           <div className="glass" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', background: 'var(--color-danger)', color: 'white' }}>
