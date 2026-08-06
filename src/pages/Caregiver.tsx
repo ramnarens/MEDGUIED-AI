@@ -14,7 +14,7 @@ const Caregiver = () => {
         </span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
+      <div className="responsive-grid-1-2" style={{ gap: '2rem' }}>
         <div className="glass" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
           <img src={patient.avatar} alt={patient.name} style={{ width: '120px', height: '120px', borderRadius: '50%', marginBottom: '1rem', objectFit: 'cover' }} />
           <h3>{patient.name}</h3>
@@ -27,7 +27,7 @@ const Caregiver = () => {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <div className="responsive-grid-2" style={{ gap: '1.5rem' }}>
           <div className="glass" style={{ padding: '1.5rem', borderRadius: 'var(--radius-lg)' }}>
             <h4 className="text-muted" style={{ marginBottom: '0.5rem' }}>Weekly Adherence</h4>
             <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--color-accent)' }}>{caregiverStats.adherenceRate}%</div>

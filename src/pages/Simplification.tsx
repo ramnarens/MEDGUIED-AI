@@ -12,7 +12,7 @@ const Simplification = () => {
     <div className="container" style={{ padding: '2rem 1.5rem', maxWidth: '900px' }}>
       <h2 style={{ marginBottom: '2rem' }}>AI Simplification</h2>
       
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '2rem', alignItems: 'center' }}>
+      <div className="responsive-grid-3-auto" style={{ gap: '2rem', alignItems: 'center' }}>
         <div className="glass" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)', textAlign: 'center' }}>
           <h4 className="text-muted" style={{ marginBottom: '1rem' }}>Original Prescription</h4>
           {scannedImage ? (

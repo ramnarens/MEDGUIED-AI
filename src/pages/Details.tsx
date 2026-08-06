@@ -20,7 +20,7 @@ const Details = () => {
             </span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '2rem' }}>
+          <div className="responsive-grid-2" style={{ gap: '1.5rem', marginTop: '2rem' }}>
             <div>
               <h4 className="text-muted">Purpose</h4>
               <p style={{ marginTop: '0.25rem', fontWeight: 500 }}>{med.purpose}</p>
@@ -36,7 +36,7 @@ const Details = () => {
             <p style={{ marginTop: '0.5rem', fontSize: '1.125rem' }}>{med.instructions}</p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '2rem' }}>
+          <div className="responsive-grid-2" style={{ gap: '1.5rem', marginTop: '2rem' }}>
             <div>
               <h4 style={{ color: 'var(--color-warning)', marginBottom: '0.5rem' }}>Side Effects</h4>
               <ul style={{ paddingLeft: '1.5rem' }}>

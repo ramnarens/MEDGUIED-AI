@@ -141,3 +141,22 @@ a:hover {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text);
 }
+
+/* Responsive Utilities */
+.responsive-grid-2 { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+.responsive-grid-2-1 { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+.responsive-grid-1-2 { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+.responsive-grid-3-auto { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+
+@media (min-width: 768px) {
+  .responsive-grid-2 { grid-template-columns: 1fr 1fr; }
+  .responsive-grid-2-1 { grid-template-columns: 2fr 1fr; }
+  .responsive-grid-1-2 { grid-template-columns: 1fr 2fr; }
+  .responsive-grid-3-auto { grid-template-columns: 1fr auto 1fr; }
+}
+
+/* Make glass containers responsive */
+@media (max-width: 640px) {
+  .container { padding: 0 1rem; }
+  .glass { padding: 1.5rem !important; }
+}

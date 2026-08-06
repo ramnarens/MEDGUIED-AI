@@ -31,7 +31,7 @@ const Reports = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+      <div className="responsive-grid-2" style={{ gap: '1.5rem' }}>
         <div className="glass" style={{ padding: '1.5rem', borderRadius: 'var(--radius-lg)' }}>
           <h4 className="text-muted">Total Doses Taken</h4>
           <p style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-accent)', marginTop: '0.5rem' }}>142</p>
