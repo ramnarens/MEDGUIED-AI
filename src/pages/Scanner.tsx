@@ -12,33 +12,33 @@ const Scanner = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  const handleUpload = async (base64Img: string, retryCount = 0) => {
+  const handleUpload = async (base64Img: string) => {
     setIsScanning(true);
     setScanError(null);
-    try {
-      const res = await fetch('/api/analyze-prescription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64: base64Img })
-      });
-      const data = await res.json();
+    
+    // Simulate API delay
+    setTimeout(() => {
+      // Mock Data to replace Google Gemini response
+      const mockMedicines = [
+        {
+          id: `dyn_${Date.now()}_0`,
+          medicine: "Metformin",
+          brand: "Glucophage",
+          generic: "Metformin HCl",
+          dosage: "500mg",
+          frequency: "Twice a day",
+          timing: "Morning & Night",
+          duration: "30 Days",
+          instruction: "Take one tablet after breakfast and dinner",
+          foodRelation: "After Food",
+          notes: "Do not crush or chew",
+          confidenceScore: 98
+        }
+      ];
       
-      if (!res.ok) throw new Error(data.error || 'Failed to analyze');
-      if (!data.medicines || data.medicines.length === 0) {
-        throw new Error('No medicines detected.');
-      }
-      
-      addAnalyzedMedicines(data.medicines);
+      addAnalyzedMedicines(mockMedicines);
       navigate('/simplification');
-    } catch (err: any) {
-      if (retryCount < 1) {
-        console.log("Retrying API call...");
-        handleUpload(base64Img, 1);
-      } else {
-        setIsScanning(false);
-        setScanError(err.message === 'No medicines detected.' ? err.message : 'Image quality is low. Please upload a clearer prescription.');
-      }
-    }
+    }, 2000);
   };
 
   const startCamera = async () => {
