@@ -234,6 +234,8 @@ const VoiceAssistant = () => {
               </button>
             </div>
           )}
+        </>
+      )}
 
       <style>{`
         @keyframes pulse {
