@@ -194,10 +194,12 @@ Your mission is to make users feel like they are talking to a caring healthcare 
           
           const model = genAI.getGenerativeModel(modelParams);
           
+          const forcedPrompt = `[CRITICAL INSTRUCTION: You MUST reply entirely in ${languageNames[language] || 'English'}. Do not use English unless the selected language is English.]\n\nUser says: ${userText}`;
+          
           if (modelConfig.useSystemPrompt) {
-            result = await model.generateContent(userText);
+            result = await model.generateContent(forcedPrompt);
           } else {
-            const combinedPrompt = `System Instructions:\n${systemInstruction}\n\nUser Input:\n${userText}`;
+            const combinedPrompt = `System Instructions:\n${systemInstruction}\n\nUser Input:\n${forcedPrompt}`;
             result = await model.generateContent(combinedPrompt);
           }
           
@@ -223,9 +225,23 @@ Your mission is to make users feel like they are talking to a caring healthcare 
             if (validModel) {
               const modelName = validModel.name.replace('models/', '');
               console.log("Dynamically found supported model:", modelName);
-              const dynamicModel = genAI.getGenerativeModel({ model: modelName });
-              const combinedPrompt = `System Instructions:\n${systemInstruction}\n\nUser Input:\n${userText}`;
-              result = await dynamicModel.generateContent(combinedPrompt);
+              
+              const supportsSystemPrompt = modelName.includes('1.5') || modelName.includes('2.0');
+              const modelParams: any = { model: modelName };
+              if (supportsSystemPrompt) {
+                modelParams.systemInstruction = systemInstruction;
+              }
+              
+              const dynamicModel = genAI.getGenerativeModel(modelParams);
+              const forcedPrompt = `[CRITICAL INSTRUCTION: You MUST reply entirely in ${languageNames[language] || 'English'}. Do not use English unless the selected language is English.]\n\nUser says: ${userText}`;
+              
+              if (supportsSystemPrompt) {
+                result = await dynamicModel.generateContent(forcedPrompt);
+              } else {
+                const combinedPrompt = `System Instructions:\n${systemInstruction}\n\nUser Input:\n${forcedPrompt}`;
+                result = await dynamicModel.generateContent(combinedPrompt);
+              }
+              
               lastError = null;
             } else {
               throw new Error(`Your API key has no models that support text generation. Available: ${data.models.map((m:any) => m.name).join(', ')}`);
@@ -241,6 +257,10 @@ Your mission is to make users feel like they are talking to a caring healthcare 
 
       if (lastError) {
         throw lastError;
+      }
+      
+      if (!result) {
+        throw new Error("Result is undefined after API call");
       }
 
       const response = await result.response;
@@ -272,6 +292,13 @@ Your mission is to make users feel like they are talking to a caring healthcare 
     
     // Use the mapped locale or default to en-US
     utterance.lang = languageMap[language] || 'en-US';
+    
+    // Try to find a specific voice for the language if available
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find(v => v.lang === utterance.lang || v.lang.startsWith(language));
+    if (voice) {
+      utterance.voice = voice;
+    }
 
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
