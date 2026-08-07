@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, Volume2, Square, Key, Loader } from 'lucide-react';
+import { Mic, Volume2, Square, Loader } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
 
 // TypeScript declaration for Web Speech API
@@ -16,12 +16,6 @@ const VoiceAssistant = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [transcript, setTranscript] = useState("Tap the microphone and ask a question...");
-  
-  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
-  const isEnvKeyValid = envKey && envKey !== 'paste_your_google_gemini_api_key_here';
-  
-  const [apiKey, setApiKey] = useState(isEnvKeyValid ? envKey : (localStorage.getItem('gemini_api_key') || ''));
-  const [showApiKeyInput, setShowApiKeyInput] = useState(!isEnvKeyValid && !localStorage.getItem('gemini_api_key'));
   
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
@@ -65,7 +59,17 @@ const VoiceAssistant = () => {
       };
 
       recognitionRef.current.onresult = (event: any) => {
-        const text = event.results[0][0].transcript;
+        let text = "";
+        try {
+          text = event.results[0][0].transcript;
+        } catch (err) {
+          console.error("Could not parse transcript", err);
+        }
+        
+        if (!text || text.trim() === "") {
+          text = "(No speech detected)";
+        }
+        
         setTranscript(text);
         handleGeminiResponse(text);
       };
@@ -73,7 +77,11 @@ const VoiceAssistant = () => {
       recognitionRef.current.onerror = (event: any) => {
         console.error("Speech recognition error", event.error);
         setIsListening(false);
-        setTranscript("Sorry, I couldn't hear that. Please try again.");
+        if (event.error === 'no-speech') {
+          setTranscript("No speech was detected. Please try again.");
+        } else {
+          setTranscript("Microphone error: " + event.error);
+        }
       };
 
       recognitionRef.current.onend = () => {
@@ -90,14 +98,6 @@ const VoiceAssistant = () => {
       if (synthRef.current) synthRef.current.cancel();
     };
   }, [language]);
-
-  const saveApiKey = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (apiKey.trim()) {
-      localStorage.setItem('gemini_api_key', apiKey.trim());
-      setShowApiKeyInput(false);
-    }
-  };
 
   const handleGeminiResponse = async (userText: string) => {
     setIsThinking(true);
@@ -130,10 +130,6 @@ const VoiceAssistant = () => {
   };
 
   const toggleListen = () => {
-    if (showApiKeyInput) {
-      setShowApiKeyInput(false); // Skip API key for mock
-    }
-
     // Unlock audio engine on first user interaction
     if (synthRef.current) {
       synthRef.current.speak(new SpeechSynthesisUtterance(''));
@@ -159,74 +155,48 @@ const VoiceAssistant = () => {
       <h2>{t('nav_voice') || 'Voice Assistant'} (Gemini AI)</h2>
       <p className="text-muted" style={{ marginBottom: '3rem' }}>Ask anything about your medicines in your language.</p>
       
-      {showApiKeyInput ? (
-        <div className="glass animate-slide-up" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', marginBottom: '3rem' }}>
-          <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-            <Key size={20} /> Enter Gemini API Key
+      <div 
+        className="glass"  
+        style={{ 
+          width: '200px', 
+          height: '200px', 
+          margin: '0 auto', 
+          borderRadius: '50%', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          background: isListening ? 'var(--color-primary)' : 'var(--color-surface)',
+          color: isListening ? 'white' : 'var(--color-primary)',
+          cursor: 'pointer',
+          boxShadow: isListening ? '0 0 40px var(--color-primary-light)' : 'var(--shadow-glass)',
+          transition: 'all 0.3s ease'
+        }}
+        onClick={toggleListen}
+      >
+        <Mic size={80} style={{ animation: isListening ? 'pulse 1.5s infinite' : 'none' }} />
+      </div>
+
+      <div className="glass animate-slide-up" style={{ marginTop: '4rem', padding: '2rem', borderRadius: 'var(--radius-lg)', minHeight: '150px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        {isThinking ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)' }}>
+            <Loader className="spin" size={24} />
+            <span>Thinking...</span>
+          </div>
+        ) : (
+          <h3 style={{ fontSize: '1.5rem', fontWeight: 500, lineHeight: 1.5 }}>
+            "{transcript}"
           </h3>
-          <p className="text-muted" style={{ marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            Since the Vercel environment variable isn't set, please paste your Gemini API Key here to test it. It will be saved securely in your browser.
-          </p>
-          <form onSubmit={saveApiKey} style={{ display: 'flex', gap: '1rem' }}>
-            <input 
-              type="password" 
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="AIzaSy..." 
-              style={{ flex: 1, padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }}
-              required
-            />
-            <button type="submit" style={{ padding: '0.75rem 1.5rem', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--color-primary)', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
-              Save
-            </button>
-          </form>
+        )}
+      </div>
+
+      {isSpeaking && (
+        <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', color: 'var(--color-primary)' }}>
+          <Volume2 size={24} style={{ animation: 'pulse 1.5s infinite' }} />
+          <span style={{ fontWeight: 600 }}>Speaking...</span>
+          <button onClick={stopSpeaking} style={{ padding: '0.5rem', borderRadius: '50%', border: 'none', background: 'var(--color-danger)', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <Square size={16} />
+          </button>
         </div>
-      ) : (
-        <>
-          <div 
-            className="glass"  
-            style={{ 
-              width: '200px', 
-              height: '200px', 
-              margin: '0 auto', 
-              borderRadius: '50%', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              background: isListening ? 'var(--color-primary)' : 'var(--color-surface)',
-              color: isListening ? 'white' : 'var(--color-primary)',
-              cursor: 'pointer',
-              boxShadow: isListening ? '0 0 40px var(--color-primary-light)' : 'var(--shadow-glass)',
-              transition: 'all 0.3s ease'
-            }}
-            onClick={toggleListen}
-          >
-            <Mic size={80} style={{ animation: isListening ? 'pulse 1.5s infinite' : 'none' }} />
-          </div>
-
-          <div className="glass animate-slide-up" style={{ marginTop: '4rem', padding: '2rem', borderRadius: 'var(--radius-lg)', minHeight: '150px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            {isThinking ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)' }}>
-                <Loader className="spin" size={24} />
-                <span>Thinking...</span>
-              </div>
-            ) : (
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 500, lineHeight: 1.5 }}>
-                "{transcript}"
-              </h3>
-            )}
-          </div>
-
-          {isSpeaking && (
-            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', color: 'var(--color-primary)' }}>
-              <Volume2 size={24} style={{ animation: 'pulse 1.5s infinite' }} />
-              <span style={{ fontWeight: 600 }}>Speaking...</span>
-              <button onClick={stopSpeaking} style={{ padding: '0.5rem', borderRadius: '50%', border: 'none', background: 'var(--color-danger)', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                <Square size={16} />
-              </button>
-            </div>
-          )}
-        </>
       )}
 
       <style>{`
