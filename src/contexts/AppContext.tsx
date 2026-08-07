@@ -62,7 +62,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const t = (key: string) => {
     // @ts-ignore
-    return translations[language][key] || key;
+    const langSet = translations[language] || translations['en'];
+    return langSet[key] || key;
   };
 
   const toggleTheme = () => {
@@ -72,7 +73,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const markAsTaken = (timeOfDay: string, medicineId: string) => {
-    setSchedule(prev => {
+    setSchedule((prev: any) => {
       const newSchedule = { ...prev };
       // @ts-ignore
       const timeSlot = newSchedule[timeOfDay];
@@ -166,7 +167,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       updateSchedule,
       language,
       setLanguage,
-      t
+      t,
+      session: null,
+      signOut: async () => {}
     }}>
       {children}
     </AppContext.Provider>
