@@ -201,13 +201,41 @@ Your mission is to make users feel like they are talking to a caring healthcare 
             result = await model.generateContent(combinedPrompt);
           }
           
-          // If we succeed, clear error and break
           lastError = null;
           break;
         } catch (err: any) {
           console.warn(`Model ${modelConfig.name} failed:`, err.message);
           lastError = err;
-          // Continue to next model in the array
+        }
+      }
+
+      if (lastError) {
+        console.warn("All static models failed. Attempting to dynamically fetch available models...");
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+          const data = await res.json();
+          
+          if (data.models && data.models.length > 0) {
+            const validModel = data.models.find((m: any) => 
+              m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent')
+            );
+            
+            if (validModel) {
+              const modelName = validModel.name.replace('models/', '');
+              console.log("Dynamically found supported model:", modelName);
+              const dynamicModel = genAI.getGenerativeModel({ model: modelName });
+              const combinedPrompt = `System Instructions:\n${systemInstruction}\n\nUser Input:\n${userText}`;
+              result = await dynamicModel.generateContent(combinedPrompt);
+              lastError = null;
+            } else {
+              throw new Error(`Your API key has no models that support text generation. Available: ${data.models.map((m:any) => m.name).join(', ')}`);
+            }
+          } else {
+             throw new Error("Your API key returned 0 available models. This may be a region restriction in Google AI Studio.");
+          }
+        } catch (dynamicErr: any) {
+          console.error("Dynamic fallback failed:", dynamicErr);
+          throw new Error(dynamicErr.message || lastError.message);
         }
       }
 
