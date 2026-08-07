@@ -53,7 +53,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [dynamicMedicines, setDynamicMedicines] = useState<DynamicMedicine[]>([]);
   const [refills, setRefills] = useState<Refill[]>([]);
   const [scannedImage, setScannedImage] = useState<string | null>(null);
-  const [language, setLanguage] = useState<string>('en');
+  const [language, setLanguageState] = useState<string>(() => localStorage.getItem('language') || 'en');
+
+  const setLanguage = (lang: string) => {
+    localStorage.setItem('language', lang);
+    setLanguageState(lang);
+  };
 
   const t = (key: string) => {
     // @ts-ignore
