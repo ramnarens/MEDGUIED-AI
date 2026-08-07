@@ -174,13 +174,27 @@ Safety Rules
 Goal
 Your mission is to make users feel like they are talking to a caring healthcare assistant who listens carefully, responds naturally, and always speaks in ${languageNames[language] || 'English'}.`;
 
-      // Use gemini-1.5-flash for better speed and fewer free-tier rate limits
-      const model = genAI.getGenerativeModel({ 
-        model: 'gemini-1.5-flash',
-        systemInstruction: systemInstruction 
-      });
+      let result;
+      
+      try {
+        // Try gemini-1.5-flash first (faster, supports system instructions natively)
+        const model = genAI.getGenerativeModel({ 
+          model: 'gemini-1.5-flash',
+          systemInstruction: systemInstruction 
+        });
+        result = await model.generateContent(userText);
+      } catch (err: any) {
+        // If 1.5 models are not available for this API key, fallback to gemini-pro
+        if (err.message && err.message.includes('404')) {
+          console.warn("gemini-1.5-flash not found, falling back to gemini-pro...");
+          const fallbackModel = genAI.getGenerativeModel({ model: 'gemini-pro' });
+          const combinedPrompt = `System Instructions:\n${systemInstruction}\n\nUser Input:\n${userText}`;
+          result = await fallbackModel.generateContent(combinedPrompt);
+        } else {
+          throw err;
+        }
+      }
 
-      const result = await model.generateContent(userText);
       const response = await result.response;
       const text = response.text();
       
