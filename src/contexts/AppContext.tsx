@@ -38,8 +38,8 @@ interface AppContextType {
   scannedImage: string | null;
   setScannedImage: (img: string | null) => void;
   updateSchedule: (newTimes: { label: string, time: string, medicineId: string, name?: string }[]) => void;
-  language: 'en' | 'hi' | 'te';
-  setLanguage: (lang: 'en' | 'hi' | 'te') => void;
+  language: string;
+  setLanguage: (lang: string) => void;
   t: (key: string) => string;
   session: any;
   signOut: () => Promise<void>;
@@ -53,7 +53,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [dynamicMedicines, setDynamicMedicines] = useState<DynamicMedicine[]>([]);
   const [refills, setRefills] = useState<Refill[]>([]);
   const [scannedImage, setScannedImage] = useState<string | null>(null);
-  const [language, setLanguage] = useState<'en' | 'hi' | 'te'>('en');
+  const [language, setLanguage] = useState<string>('en');
 
   const t = (key: string) => {
     // @ts-ignore

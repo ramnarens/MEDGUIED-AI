@@ -33,10 +33,30 @@ const Settings = () => {
           </h3>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p style={{ fontWeight: 500 }}>{t('settings_app_lang')}</p>
-            <select value={language} onChange={(e) => setLanguage(e.target.value as any)} style={{ padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }}>
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{ padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }}>
               <option value="en">English</option>
               <option value="hi">हिंदी (Hindi)</option>
               <option value="te">తెలుగు (Telugu)</option>
+              <option value="ta">தமிழ் (Tamil)</option>
+              <option value="mr">मराठी (Marathi)</option>
+              <option value="bn">বাংলা (Bengali)</option>
+              <option value="gu">ગુજરાતી (Gujarati)</option>
+              <option value="kn">ಕನ್ನಡ (Kannada)</option>
+              <option value="ml">മലയാളം (Malayalam)</option>
+              <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+              <option value="or">ଓଡ଼ିଆ (Odia)</option>
+              <option value="ur">اردو (Urdu)</option>
+              <option value="as">অসমীয়া (Assamese)</option>
+              <option value="sa">संस्कृतम् (Sanskrit)</option>
+              <option value="ks">کأشُر (Kashmiri)</option>
+              <option value="ne">नेपाली (Nepali)</option>
+              <option value="sd">سنڌي (Sindhi)</option>
+              <option value="kok">कोंकणी (Konkani)</option>
+              <option value="mni">মৈতৈলোন্ (Manipuri)</option>
+              <option value="mai">मैथिली (Maithili)</option>
+              <option value="doi">डोगरी (Dogri)</option>
+              <option value="brx">बड़ो (Bodo)</option>
+              <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</option>
             </select>
           </div>
         </div>

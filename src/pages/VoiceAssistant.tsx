@@ -26,6 +26,29 @@ const VoiceAssistant = () => {
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
 
+  // Map our simple language codes to BCP-47 tags for Speech API
+  const languageMap: Record<string, string> = {
+    en: 'en-US', hi: 'hi-IN', te: 'te-IN', ta: 'ta-IN', mr: 'mr-IN',
+    bn: 'bn-IN', gu: 'gu-IN', kn: 'kn-IN', ml: 'ml-IN', pa: 'pa-IN',
+    or: 'or-IN', ur: 'ur-IN', as: 'as-IN', sa: 'sa-IN', ks: 'ks-IN',
+    ne: 'ne-NP', sd: 'sd-IN', kok: 'kok-IN', mni: 'mni-IN', mai: 'mai-IN',
+    doi: 'doi-IN', brx: 'brx-IN', sat: 'sat-IN'
+  };
+
+  // Provide mock responses in various languages to simulate translation
+  const mockResponses: Record<string, string> = {
+    en: "I am a local mock assistant. You said: ",
+    hi: "मैं एक स्थानीय सहायक हूँ। आपने कहा: ",
+    te: "నేను స్థానిక సహాయకుడిని. మీరు అన్నారు: ",
+    ta: "நான் ஒரு உள்ளூர் உதவியாளர். நீங்கள் கூறினீர்கள்: ",
+    mr: "मी एक स्थानिक सहाय्यक आहे. आपण म्हणालात: ",
+    bn: "আমি একটি স্থানীয় সহকারী। আপনি বলেছেন: ",
+    gu: "હું એક સ્થાનિક સહાયક છું. તમે કહ્યું: ",
+    kn: "ನಾನು ಸ್ಥಳೀಯ ಸಹಾಯಕ. ನೀವು ಹೇಳಿದ್ದೀರಿ: ",
+    ml: "ഞാൻ ഒരു പ്രാദേശിക സഹായിയാണ്. നിങ്ങൾ പറഞ്ഞു: ",
+    ur: "میں ایک مقامی معاون ہوں۔ آپ نے کہا: "
+  };
+
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -33,9 +56,8 @@ const VoiceAssistant = () => {
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
       
-      if (language === 'hi') recognitionRef.current.lang = 'hi-IN';
-      else if (language === 'te') recognitionRef.current.lang = 'te-IN';
-      else recognitionRef.current.lang = 'en-US';
+      // Use the mapped locale or default to en-US
+      recognitionRef.current.lang = languageMap[language] || 'en-US';
 
       recognitionRef.current.onstart = () => {
         setIsListening(true);
@@ -83,7 +105,9 @@ const VoiceAssistant = () => {
     // Simulate AI delay
     setTimeout(() => {
       setIsThinking(false);
-      const reply = "I am a local mock assistant. You said: " + userText;
+      // Select the mock response prefix based on the current language, default to English
+      const prefix = mockResponses[language] || mockResponses['en'];
+      const reply = prefix + userText;
       setTranscript(reply);
       speak(reply);
     }, 1500);
@@ -95,9 +119,8 @@ const VoiceAssistant = () => {
 
     const utterance = new SpeechSynthesisUtterance(text);
     
-    if (language === 'hi') utterance.lang = 'hi-IN';
-    else if (language === 'te') utterance.lang = 'te-IN';
-    else utterance.lang = 'en-US';
+    // Use the mapped locale or default to en-US
+    utterance.lang = languageMap[language] || 'en-US';
 
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);

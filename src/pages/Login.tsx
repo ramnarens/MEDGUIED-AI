@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../contexts/AppContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { language, setLanguage } = useAppContext();
   const [isLogin, setIsLogin] = useState(true);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -20,10 +22,40 @@ const Login = () => {
         
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.25rem' }}>
           {!isLogin && (
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Full Name</label>
-              <input type="text" required style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }} />
-            </div>
+            <>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Full Name</label>
+                <input type="text" required style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Preferred Language</label>
+                <select value={language} onChange={(e) => setLanguage(e.target.value)} required style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }}>
+                  <option value="en">English</option>
+                  <option value="hi">हिंदी (Hindi)</option>
+                  <option value="te">తెలుగు (Telugu)</option>
+                  <option value="ta">தமிழ் (Tamil)</option>
+                  <option value="mr">मराठी (Marathi)</option>
+                  <option value="bn">বাংলা (Bengali)</option>
+                  <option value="gu">ગુજરાતી (Gujarati)</option>
+                  <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                  <option value="ml">മലയാളം (Malayalam)</option>
+                  <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                  <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                  <option value="ur">اردو (Urdu)</option>
+                  <option value="as">অসমীয়া (Assamese)</option>
+                  <option value="sa">संस्कृतम् (Sanskrit)</option>
+                  <option value="ks">کأشُر (Kashmiri)</option>
+                  <option value="ne">नेपाली (Nepali)</option>
+                  <option value="sd">سنڌي (Sindhi)</option>
+                  <option value="kok">कोंकणी (Konkani)</option>
+                  <option value="mni">মৈতৈলোন্ (Manipuri)</option>
+                  <option value="mai">मैथिली (Maithili)</option>
+                  <option value="doi">डोगरी (Dogri)</option>
+                  <option value="brx">बड़ो (Bodo)</option>
+                  <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</option>
+                </select>
+              </div>
+            </>
           )}
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Email Address</label>
