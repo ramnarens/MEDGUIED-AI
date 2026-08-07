@@ -175,24 +175,44 @@ Goal
 Your mission is to make users feel like they are talking to a caring healthcare assistant who listens carefully, responds naturally, and always speaks in ${languageNames[language] || 'English'}.`;
 
       let result;
+      let lastError: any = null;
       
-      try {
-        // Try gemini-1.5-flash first (faster, supports system instructions natively)
-        const model = genAI.getGenerativeModel({ 
-          model: 'gemini-1.5-flash',
-          systemInstruction: systemInstruction 
-        });
-        result = await model.generateContent(userText);
-      } catch (err: any) {
-        // If 1.5 models are not available for this API key, fallback to gemini-pro
-        if (err.message && err.message.includes('404')) {
-          console.warn("gemini-1.5-flash not found, falling back to gemini-pro...");
-          const fallbackModel = genAI.getGenerativeModel({ model: 'gemini-pro' });
-          const combinedPrompt = `System Instructions:\n${systemInstruction}\n\nUser Input:\n${userText}`;
-          result = await fallbackModel.generateContent(combinedPrompt);
-        } else {
-          throw err;
+      const modelsToTry = [
+        { name: 'gemini-1.5-flash', useSystemPrompt: true },
+        { name: 'gemini-1.5-flash-latest', useSystemPrompt: true },
+        { name: 'gemini-1.5-pro', useSystemPrompt: true },
+        { name: 'gemini-1.0-pro', useSystemPrompt: false },
+        { name: 'gemini-pro', useSystemPrompt: false }
+      ];
+
+      for (const modelConfig of modelsToTry) {
+        try {
+          const modelParams: any = { model: modelConfig.name };
+          if (modelConfig.useSystemPrompt) {
+            modelParams.systemInstruction = systemInstruction;
+          }
+          
+          const model = genAI.getGenerativeModel(modelParams);
+          
+          if (modelConfig.useSystemPrompt) {
+            result = await model.generateContent(userText);
+          } else {
+            const combinedPrompt = `System Instructions:\n${systemInstruction}\n\nUser Input:\n${userText}`;
+            result = await model.generateContent(combinedPrompt);
+          }
+          
+          // If we succeed, clear error and break
+          lastError = null;
+          break;
+        } catch (err: any) {
+          console.warn(`Model ${modelConfig.name} failed:`, err.message);
+          lastError = err;
+          // Continue to next model in the array
         }
+      }
+
+      if (lastError) {
+        throw lastError;
       }
 
       const response = await result.response;
