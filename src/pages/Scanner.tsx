@@ -73,10 +73,14 @@ const Scanner = () => {
         ctx.drawImage(videoRef.current, 0, 0);
         const dataUrl = canvas.toDataURL('image/jpeg');
         setScannedImage(dataUrl);
+        stopCamera();
+        handleUpload(dataUrl);
+      } else {
+        stopCamera();
       }
+    } else {
+      stopCamera();
     }
-    stopCamera();
-    handleUpload(dataUrl);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

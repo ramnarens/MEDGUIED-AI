@@ -21,7 +21,7 @@ const Reminders = () => {
         </button>
       </div>
 
-      {Object.entries(schedule).map(([timeOfDay, meds]) => (
+      {Object.entries(schedule).map(([timeOfDay, meds]: [string, any]) => (
         <div key={timeOfDay} style={{ marginBottom: '2.5rem' }}>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>
             <Clock size={24} /> {timeOfDay}
