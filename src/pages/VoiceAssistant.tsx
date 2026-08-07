@@ -217,6 +217,10 @@ Your mission is to make users feel like they are talking to a caring healthcare 
           const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
           const data = await res.json();
           
+          if (data.error) {
+            throw new Error(`API Error: ${data.error.message || 'Invalid or restricted API Key'}`);
+          }
+          
           if (data.models && data.models.length > 0) {
             const validModel = data.models.find((m: any) => 
               m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent')
@@ -274,10 +278,13 @@ Your mission is to make users feel like they are talking to a caring healthcare 
       
       // If the error mentions API key, reset it so they can try again
       if (errorMsg.toLowerCase().includes('api key') || errorMsg.includes('403') || errorMsg.includes('400')) {
-        setTranscript(`API Error: ${errorMsg}. Please check your key and try again.`);
+        setTranscript(`API Error: Invalid or restricted API Key. Please try a different one.`);
         setTimeout(() => setShowApiKeyInput(true), 3000);
+      } else if (errorMsg.includes('429') || errorMsg.toLowerCase().includes('quota')) {
+        setTranscript(`Google API Quota Exceeded. You've reached the free limit for this API key. Please use a different key or try again later.`);
+        setTimeout(() => setShowApiKeyInput(true), 4000);
       } else {
-        setTranscript(`Error: ${errorMsg}`);
+        setTranscript(`Error: ${errorMsg.split('[')[0]}`); // Try to keep it short
       }
     } finally {
       setIsThinking(false);
