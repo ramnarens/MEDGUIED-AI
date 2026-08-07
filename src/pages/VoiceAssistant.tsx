@@ -174,9 +174,9 @@ Safety Rules
 Goal
 Your mission is to make users feel like they are talking to a caring healthcare assistant who listens carefully, responds naturally, and always speaks in ${languageNames[language] || 'English'}.`;
 
-      // Use gemini-1.5-pro for better system instruction adherence and language quality
+      // Use gemini-1.5-flash for better speed and fewer free-tier rate limits
       const model = genAI.getGenerativeModel({ 
-        model: 'gemini-1.5-pro',
+        model: 'gemini-1.5-flash',
         systemInstruction: systemInstruction 
       });
 
@@ -186,9 +186,17 @@ Your mission is to make users feel like they are talking to a caring healthcare 
       
       setTranscript(text);
       speak(text);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Gemini API Error:", error);
-      setTranscript("Sorry, I encountered an error connecting to the AI. Please check your API key or try again.");
+      const errorMsg = error.message || "Unknown error";
+      
+      // If the error mentions API key, reset it so they can try again
+      if (errorMsg.toLowerCase().includes('api key') || errorMsg.includes('403') || errorMsg.includes('400')) {
+        setTranscript(`API Error: ${errorMsg}. Please check your key and try again.`);
+        setTimeout(() => setShowApiKeyInput(true), 3000);
+      } else {
+        setTranscript(`Error: ${errorMsg}`);
+      }
     } finally {
       setIsThinking(false);
     }
